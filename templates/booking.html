@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Book – {{ dest.name }}{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+  <div class="container">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.destinations') }}">Destinations</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('main.trip_details', destination_id=dest.id) }}">{{ dest.name }}</a></li>
+        <li class="breadcrumb-item active">Book Trip</li>
+      </ol>
+    </nav>
+
+    <!-- Steps -->
+    <div class="tv-steps mb-5">
+      <div class="tv-step active"><div class="tv-step-num">1</div><div class="tv-step-label">Traveller Details</div></div>
+      <div class="tv-step-line"></div>
+      <div class="tv-step"><div class="tv-step-num">2</div><div class="tv-step-label">Review & Pay</div></div>
+      <div class="tv-step-line"></div>
+      <div class="tv-step"><div class="tv-step-num">3</div><div class="tv-step-label">Confirmation</div></div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Form -->
+      <div class="col-lg-8">
+        <form method="POST" action="{{ url_for('main.booking', destination_id=dest.id) }}" id="bookingForm">
+          {{ form.hidden_tag() }}
+          {{ form.destination_id() }}
+
+          <!-- Trip details -->
+          <div class="tv-card mb-4">
+            <div class="tv-card-header"><h5 class="fw-bold mb-0">Trip Details</h5></div>
+            <div class="tv-card-body">
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small" for="travel_date">Travel Date</label>
+                  {{ form.travel_date(class="form-control" + (" is-invalid" if form.travel_date.errors else ""), id="travel_date") }}
+                  {% for e in form.travel_date.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small" for="return_date">Return Date</label>
+                  {{ form.return_date(class="form-control", id="return_date") }}
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small" for="num_adults">Number of Adults</label>
+                  {{ form.num_adults(class="form-select", id="num_adults") }}
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small" for="num_children">Number of Children</label>
+                  {{ form.num_children(class="form-select", id="num_children") }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lead traveller -->
+          <div class="tv-card mb-4">
+            <div class="tv-card-header"><h5 class="fw-bold mb-0">Lead Traveller</h5></div>
+            <div class="tv-card-body">
+              <div class="row g-3">
+                <div class="col-sm-2">
+                  <label class="form-label fw-semibold small">Title</label>
+                  {{ form.title(class="form-select") }}
+                </div>
+                <div class="col-sm-5">
+                  <label class="form-label fw-semibold small" for="lead_first_name">First Name</label>
+                  {{ form.lead_first_name(class="form-control" + (" is-invalid" if form.lead_first_name.errors else ""),
+                     placeholder="As per passport", id="lead_first_name",
+                     value=current_user.first_name) }}
+                  {% for e in form.lead_first_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="col-sm-5">
+                  <label class="form-label fw-semibold small" for="lead_last_name">Last Name</label>
+                  {{ form.lead_last_name(class="form-control" + (" is-invalid" if form.lead_last_name.errors else ""),
+                     placeholder="As per passport", id="lead_last_name",
+                     value=current_user.last_name) }}
+                  {% for e in form.lead_last_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small" for="lead_dob">Date of Birth</label>
+                  {{ form.lead_dob(class="form-control", id="lead_dob") }}
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small" for="lead_nationality">Nationality</label>
+                  {{ form.lead_nationality(class="form-control", placeholder="e.g. Indian", id="lead_nationality") }}
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small" for="lead_email">Email Address</label>
+                  {{ form.lead_email(class="form-control" + (" is-invalid" if form.lead_email.errors else ""),
+                     placeholder="Booking confirmation", id="lead_email",
+                     value=current_user.email) }}
+                  {% for e in form.lead_email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small" for="lead_phone">Phone Number</label>
+                  {{ form.lead_phone(class="form-control", placeholder="+91 9876543210", id="lead_phone",
+                     value=current_user.phone or '') }}
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold small" for="lead_passport">Passport Number</label>
+                  {{ form.lead_passport(class="form-control", placeholder="Optional — required for visa processing", id="lead_passport") }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Special requests -->
+          <div class="tv-card mb-4">
+            <div class="tv-card-header"><h5 class="fw-bold mb-0">Special Requests</h5></div>
+            <div class="tv-card-body">
+              <div class="mb-3">
+                <label class="form-label fw-semibold small">Dietary Requirements</label>
+                <div class="tv-dietary-grid">
+                  {% for choice in form.dietary %}
+                  <div class="tv-dietary-option">
+                    {{ choice(class="tv-dietary-checkbox") }}
+                    <label class="form-check-label small" for="{{ choice.id }}">{{ choice.label.text }}</label>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              <div>
+                <label class="form-label fw-semibold small" for="notes">Additional Notes</label>
+                {{ form.notes(class="form-control", rows=3, placeholder="Any other requests…", id="notes") }}
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('main.trip_details', destination_id=dest.id) }}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+            <button type="submit" class="btn tv-btn-primary px-5">
+              Confirm Booking <i class="bi bi-check2-circle ms-1"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Price Summary -->
+      <div class="col-lg-4">
+        <div class="tv-booking-card sticky-top" style="top: 80px;">
+          <div class="tv-booking-card-header">
+            <div class="d-flex align-items-center gap-3">
+              <img src="{{ dest.image_url or 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=120&q=80' }}"
+                   alt="{{ dest.name }}" class="rounded-2" width="56" height="56" style="object-fit:cover;" />
+              <div>
+                <div class="text-white fw-semibold">{{ dest.name }}</div>
+                <div class="text-white-50 small">{{ dest.duration }} days</div>
+              </div>
+            </div>
+          </div>
+          <div class="tv-booking-card-body">
+            <h6 class="fw-bold mb-3">Price Summary</h6>
+            <div class="d-flex flex-column gap-2 small mb-3">
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Base price (2 adults)</span>
+                <span id="summaryBase">${{ "{:,.0f}".format(dest.price * 2) }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Children (0)</span>
+                <span id="summaryChildren">$0</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Taxes & fees</span>
+                <span>$180</span>
+              </div>
+            </div>
+            <hr />
+            <div class="d-flex justify-content-between fw-bold">
+              <span>Total</span>
+              <span id="summaryTotal">${{ "{:,.0f}".format(dest.price * 2 + 180) }}</span>
+            </div>
+            <div class="alert alert-success small mt-3 mb-0 py-2">
+              <i class="bi bi-tag-fill me-1"></i> Free cancellation within 48 hours
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const destPrice = {{ dest.price }};
+  const adultsSel = document.getElementById('num_adults');
+  const childSel  = document.getElementById('num_children');
+
+  function updateSummary() {
+    const adults   = parseInt(adultsSel?.value || 2);
+    const children = parseInt(childSel?.value  || 0);
+    const adultCost  = adults * destPrice;
+    const childCost  = Math.round(children * destPrice * 0.7);
+    const total      = adultCost + childCost + 180;
+    document.getElementById('summaryBase').textContent = '$' + adultCost.toLocaleString();
+    document.getElementById('summaryChildren').textContent = childCost > 0 ? '$' + childCost.toLocaleString() : '$0';
+    document.getElementById('summaryTotal').textContent = '$' + total.toLocaleString();
+  }
+
+  if (adultsSel) adultsSel.addEventListener('change', updateSummary);
+  if (childSel)  childSel.addEventListener('change',  updateSummary);
+</script>
+{% endblock %}

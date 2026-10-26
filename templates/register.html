@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<section class="tv-auth-section">
+  <div class="container">
+    <div class="row justify-content-center align-items-stretch">
+
+      <!-- Left promo panel -->
+      <div class="col-lg-5 d-none d-lg-flex">
+        <div class="tv-auth-promo tv-auth-promo-register w-100">
+          <div class="tv-auth-promo-overlay"></div>
+          <div class="tv-auth-promo-content">
+            <i class="bi bi-globe2 fs-1 text-white mb-3"></i>
+            <h3 class="text-white fw-bold mb-3">Join TripVault Today</h3>
+            <p class="text-white-50">Create a free account and start exploring the world while keeping your travel documents safe in the cloud.</p>
+            <div class="mt-4 d-flex flex-column gap-3">
+              <div class="d-flex align-items-center gap-2 text-white-50 small">
+                <i class="bi bi-check-circle text-success"></i> Free account — no credit card required
+              </div>
+              <div class="d-flex align-items-center gap-2 text-white-50 small">
+                <i class="bi bi-check-circle text-success"></i> 150+ curated destinations
+              </div>
+              <div class="d-flex align-items-center gap-2 text-white-50 small">
+                <i class="bi bi-check-circle text-success"></i> Secure document vault (5 GB free)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right form panel -->
+      <div class="col-lg-7 d-flex align-items-center">
+        <div class="tv-auth-form-wrap w-100 py-5 px-lg-5 px-4">
+
+          <div class="mb-4">
+            <a href="{{ url_for('main.index') }}" class="tv-brand text-decoration-none h5">
+              <i class="bi bi-airplane-engines-fill"></i> TripVault
+            </a>
+          </div>
+
+          <h2 class="fw-bold mb-1">Create Account</h2>
+          <p class="text-muted mb-4">Fill in the details below to get started.</p>
+
+          <form method="POST" action="{{ url_for('auth.register') }}">
+            {{ form.hidden_tag() }}
+            <div class="row g-3">
+
+              <div class="col-sm-6">
+                <label class="form-label fw-semibold small" for="first_name">First Name</label>
+                {{ form.first_name(class="form-control bg-light" + (" is-invalid" if form.first_name.errors else ""),
+                   id="first_name", placeholder="John") }}
+                {% for e in form.first_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+              </div>
+
+              <div class="col-sm-6">
+                <label class="form-label fw-semibold small" for="last_name">Last Name</label>
+                {{ form.last_name(class="form-control bg-light" + (" is-invalid" if form.last_name.errors else ""),
+                   id="last_name", placeholder="Doe") }}
+                {% for e in form.last_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold small" for="reg_email">Email Address</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                  {{ form.email(class="form-control border-start-0 bg-light" + (" is-invalid" if form.email.errors else ""),
+                     id="reg_email", placeholder="you@example.com") }}
+                  {% for e in form.email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold small" for="phone">Phone Number</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0"><i class="bi bi-telephone text-muted"></i></span>
+                  {{ form.phone(class="form-control border-start-0 bg-light", id="phone", placeholder="+91 9876543210") }}
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold small" for="reg_password">Password</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                  {{ form.password(class="form-control border-start-0 bg-light" + (" is-invalid" if form.password.errors else ""),
+                     id="regPassword", placeholder="Min. 8 characters") }}
+                  <button class="input-group-text bg-light border-start-0 toggle-password" type="button" tabindex="-1">
+                    <i class="bi bi-eye text-muted"></i>
+                  </button>
+                  {% for e in form.password.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="mt-2">
+                  <div class="progress" style="height:4px;">
+                    <div class="progress-bar" id="passwordStrengthBar" role="progressbar" style="width:0%;"></div>
+                  </div>
+                  <small class="text-muted" id="passwordStrengthText"></small>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold small" for="confirm">Confirm Password</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock-fill text-muted"></i></span>
+                  {{ form.confirm(class="form-control border-start-0 bg-light" + (" is-invalid" if form.confirm.errors else ""),
+                     id="confirmPassword", placeholder="Re-enter password") }}
+                  {% for e in form.confirm.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-check">
+                  {{ form.terms(class="form-check-input" + (" is-invalid" if form.terms.errors else ""), id="termsCheck") }}
+                  <label class="form-check-label small text-muted" for="termsCheck">
+                    I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a>
+                  </label>
+                  {% for e in form.terms.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+              </div>
+
+              <div class="col-12">
+                <button type="submit" class="btn tv-btn-primary w-100 py-3 fw-semibold">
+                  Create My Account <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="text-center mt-4">
+              <span class="text-muted small">Already have an account? </span>
+              <a href="{{ url_for('auth.login') }}" class="text-primary fw-semibold small">Sign in</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

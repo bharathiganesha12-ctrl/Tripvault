@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block title %}Documents{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+  <div class="container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="fw-bold mb-1">Secure Document Vault</h3>
+        <p class="text-muted small mb-0">Upload and manage your travel documents — encrypted with AES-256.</p>
+      </div>
+      <button class="btn tv-btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+        <i class="bi bi-cloud-upload me-1"></i> Upload Document
+      </button>
+    </div>
+
+    <!-- Security banner -->
+    <div class="alert tv-security-banner d-flex align-items-center gap-3 mb-4">
+      <i class="bi bi-shield-fill-check text-success fs-4"></i>
+      <div>
+        <div class="fw-semibold">End-to-End Encrypted Storage</div>
+        <div class="small text-muted">All documents are encrypted using AES-256 before saving. Only you can access them.</div>
+      </div>
+      <div class="ms-auto text-end d-none d-md-block">
+        <div class="small text-muted">Storage used</div>
+        <div class="progress mt-1" style="width:120px; height:6px;">
+          {% set used_mb = (total_bytes / 1048576) | round(1) %}
+          {% set pct = [(used_mb / 5120 * 100) | round | int, 100] | min %}
+          <div class="progress-bar bg-success" style="width:{{ pct }}%"></div>
+        </div>
+        <div class="small text-muted mt-1">{{ used_mb }} MB / 5 GB</div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Sidebar categories -->
+      <div class="col-lg-3">
+        <div class="tv-card mb-3">
+          <div class="tv-card-body p-0">
+            <div class="list-group list-group-flush tv-doc-filter">
+              {% set counts = {} %}
+              {% for doc in docs %}
+                {% if doc.doc_type in counts %}
+                  {% set _ = counts.update({doc.doc_type: counts[doc.doc_type] + 1}) %}
+                {% else %}
+                  {% set _ = counts.update({doc.doc_type: 1}) %}
+                {% endif %}
+              {% endfor %}
+              <button class="list-group-item list-group-item-action active d-flex justify-content-between" data-filter="all">
+                <span><i class="bi bi-files me-2"></i>All Documents</span>
+                <span class="badge bg-primary rounded-pill">{{ docs | length }}</span>
+              </button>
+              {% for dtype in ['passport','visa','insurance','ticket','hotel','vaccine','other'] %}
+              {% if counts.get(dtype, 0) > 0 %}
+              <button class="list-group-item list-group-item-action d-flex justify-content-between" data-filter="{{ dtype }}">
+                <span>{{ dtype | capitalize }}</span>
+                <span class="badge bg-secondary rounded-pill">{{ counts[dtype] }}</span>
+              </button>
+              {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="tv-card">
+          <div class="tv-card-body">
+            <h6 class="fw-bold mb-2 small">Accepted Formats</h6>
+            <div class="d-flex flex-wrap gap-1">
+              {% for fmt in ["PDF", "JPG", "PNG", "DOCX"] %}
+              <span class="badge bg-light text-dark border">{{ fmt }}</span>
+              {% endfor %}
+            </div>
+            <h6 class="fw-bold mb-2 mt-3 small">Max File Size</h6>
+            <span class="badge bg-light text-dark border">25 MB per file</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents area -->
+      <div class="col-lg-9">
+
+        <!-- Drop zone -->
+        <div class="tv-dropzone mb-4" id="dropZone">
+          <i class="bi bi-cloud-arrow-up text-muted" style="font-size:2.5rem;"></i>
+          <h6 class="mt-2 mb-1 text-muted">Drag & drop files here</h6>
+          <p class="text-muted small mb-3">or click to browse (PDF, JPG, PNG, DOCX — max 25 MB)</p>
+          <button class="btn btn-outline-primary tv-btn-outline" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            Choose Files
+          </button>
+        </div>
+
+        <!-- Documents table -->
+        <div class="tv-card">
+          <div class="tv-card-header">
+            <h6 class="fw-bold mb-0">Uploaded Documents</h6>
+            <div class="input-group" style="max-width:220px;">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted small"></i></span>
+              <input type="text" class="form-control border-start-0 bg-light form-control-sm"
+                     placeholder="Search documents…" id="docSearch" />
+            </div>
+          </div>
+          <div class="tv-card-body p-0">
+            {% if docs %}
+            <div class="table-responsive">
+              <table class="table tv-table mb-0" id="docsTable">
+                <thead>
+                  <tr>
+                    <th>Document</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Uploaded</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for doc in docs %}
+                  <tr class="doc-row" data-type="{{ doc.doc_type }}" data-name="{{ doc.display_name | lower }}">
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <i class="bi {{ doc.type_icon }} text-{{ doc.type_color }} fs-5"></i>
+                        <div>
+                          <div class="fw-semibold small text-break">{{ doc.display_name }}</div>
+                          <div class="text-muted" style="font-size:0.7rem;">{{ doc.original_name }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="badge bg-light text-dark border">{{ doc.type_label }}</span></td>
+                    <td class="text-muted small">{{ doc.size_display }}</td>
+                    <td class="text-muted small">{{ doc.uploaded_at.strftime('%d %b %Y') }}</td>
+                    <td>
+                      <span class="badge bg-success-subtle text-success">
+                        <i class="bi bi-lock-fill me-1"></i>Encrypted
+                      </span>
+                    </td>
+                    <td>
+                      <div class="d-flex gap-1">
+                        <a href="{{ url_for('documents.download', doc_id=doc.id) }}"
+                           class="btn btn-sm btn-outline-secondary" title="Download">
+                          <i class="bi bi-download"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('documents.delete', doc_id=doc.id) }}"
+                              onsubmit="return confirm('Delete {{ doc.display_name }}? This cannot be undone.')">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                          <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5" id="noDocuments">
+              <i class="bi bi-folder2-open text-muted" style="font-size:3rem;"></i>
+              <h6 class="mt-3 text-muted">No documents uploaded yet</h6>
+              <p class="text-muted small">Upload your first travel document to get started.</p>
+              <button class="btn tv-btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">Upload Now</button>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== UPLOAD MODAL ===== -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="uploadModalLabel">
+          <i class="bi bi-cloud-arrow-up me-2 text-primary"></i>Upload Document
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('documents.upload') }}" enctype="multipart/form-data" id="uploadForm">
+        {{ form.hidden_tag() }}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Document Type</label>
+            {{ form.doc_type(class="form-select" + (" is-invalid" if form.doc_type.errors else "")) }}
+            {% for e in form.doc_type.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Document Name</label>
+            {{ form.display_name(class="form-control" + (" is-invalid" if form.display_name.errors else ""),
+               placeholder="e.g. Passport_John_Doe") }}
+            {% for e in form.display_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Choose File</label>
+            {{ form.file(class="form-control" + (" is-invalid" if form.file.errors else ""), id="fileInput") }}
+            <div class="form-text">PDF, JPG, PNG, DOCX — max 25 MB</div>
+            {% for e in form.file.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- File preview -->
+          <div id="filePreview" class="d-none">
+            <div class="d-flex align-items-center gap-2 p-2 bg-light rounded-2">
+              <i class="bi bi-file-earmark-check text-success"></i>
+              <span class="small" id="filePreviewName"></span>
+              <button type="button" class="btn-close ms-auto" id="clearFile" style="font-size:0.6rem;"></button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn tv-btn-primary">
+            <i class="bi bi-cloud-upload me-1"></i> Upload Securely
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

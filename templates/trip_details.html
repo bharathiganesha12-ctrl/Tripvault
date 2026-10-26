@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}{{ dest.name }}{% endblock %}
+
+{% block content %}
+
+<!-- ===== HERO ===== -->
+<section class="tv-trip-hero" style="background-image: url('{{ dest.image_url or "https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1200&q=80" }}')">
+  <div class="tv-trip-hero-overlay"></div>
+  <div class="container position-relative z-1 py-5">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb tv-breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('main.destinations') }}">Destinations</a></li>
+        <li class="breadcrumb-item active">{{ dest.name }}</li>
+      </ol>
+    </nav>
+    <span class="tv-dest-badge mb-2">{{ dest.tag }}</span>
+    <h1 class="text-white fw-bold display-5 mb-2">{{ dest.name }}</h1>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <span class="text-white-50"><i class="bi bi-geo-alt me-1"></i>{{ dest.continent }}</span>
+      <span class="text-white-50"><i class="bi bi-clock me-1"></i>{{ dest.duration }} days</span>
+      <span class="text-white-50"><i class="bi bi-star-fill text-warning me-1"></i>{{ dest.rating }} ({{ dest.review_count }} reviews)</span>
+      {% if dest.best_time %}
+      <span class="text-white-50"><i class="bi bi-sun me-1"></i>Best time: {{ dest.best_time }}</span>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTENT ===== -->
+<section class="py-5">
+  <div class="container">
+    <div class="row g-5">
+
+      <!-- Left / Main -->
+      <div class="col-lg-8">
+
+        <!-- Hero image -->
+        <div class="mb-4">
+          <img src="{{ dest.image_url or 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1200&q=80' }}"
+               alt="{{ dest.name }}" class="img-fluid rounded-4 w-100 shadow-sm" style="max-height:400px; object-fit:cover;" />
+        </div>
+
+        <!-- Overview -->
+        <h4 class="fw-bold mb-3">Trip Overview</h4>
+        <p class="text-muted">{{ dest.description or "Experience the best of " ~ dest.name ~ " on this carefully curated " ~ dest.duration ~ "-day package." }}</p>
+
+        <!-- What's included (static for now — will be a DB field in Phase 3) -->
+        <div class="row g-4 mt-2">
+          <div class="col-sm-6">
+            <h6 class="fw-bold mb-3">What's Included</h6>
+            <ul class="list-unstyled">
+              {% for item in ["Return flights", "Hotel accommodation (4-star)", "Daily breakfast & dinner", "Airport transfers", "Guided tours", "Travel insurance"] %}
+              <li class="d-flex align-items-start gap-2 mb-2">
+                <i class="bi bi-check2 text-success flex-shrink-0 mt-1"></i>
+                <span class="small text-muted">{{ item }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="col-sm-6">
+            <h6 class="fw-bold mb-3">Not Included</h6>
+            <ul class="list-unstyled">
+              {% for item in ["Personal expenses", "Tips & gratuities", "Optional excursions"] %}
+              <li class="d-flex align-items-start gap-2 mb-2">
+                <i class="bi bi-x text-danger flex-shrink-0 mt-1"></i>
+                <span class="small text-muted">{{ item }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Key facts -->
+        <div class="row g-3 mt-2">
+          <div class="col-6 col-md-3">
+            <div class="tv-fact-box text-center p-3 rounded-3 bg-light">
+              <i class="bi bi-clock text-primary fs-4"></i>
+              <div class="fw-bold mt-1">{{ dest.duration }} Days</div>
+              <div class="text-muted small">Duration</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="tv-fact-box text-center p-3 rounded-3 bg-light">
+              <i class="bi bi-star-fill text-warning fs-4"></i>
+              <div class="fw-bold mt-1">{{ dest.rating }}/5</div>
+              <div class="text-muted small">Rating</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="tv-fact-box text-center p-3 rounded-3 bg-light">
+              <i class="bi bi-geo-alt text-teal fs-4"></i>
+              <div class="fw-bold mt-1">{{ dest.continent }}</div>
+              <div class="text-muted small">Region</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="tv-fact-box text-center p-3 rounded-3 bg-light">
+              <i class="bi bi-sun text-orange fs-4"></i>
+              <div class="fw-bold mt-1" style="font-size:0.8rem;">{{ dest.best_time or 'Year-round' }}</div>
+              <div class="text-muted small">Best Time</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right / Booking card -->
+      <div class="col-lg-4">
+        <div class="tv-booking-card sticky-top" style="top: 80px;">
+          <div class="tv-booking-card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-white-50 small">Price per person</div>
+                <div class="text-white fw-bold fs-2">${{ "{:,.0f}".format(dest.price) }}</div>
+              </div>
+              <div class="text-end">
+                <div class="text-warning"><i class="bi bi-star-fill"></i> {{ dest.rating }}</div>
+                <div class="text-white-50 small">{{ dest.review_count }} reviews</div>
+              </div>
+            </div>
+          </div>
+          <div class="tv-booking-card-body">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Travel Date</label>
+              <input type="date" class="form-control" id="travelDatePreview" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Number of Travellers</label>
+              <select class="form-select" id="numTravellersPreview">
+                {% for n in range(1, 6) %}
+                <option value="{{ n }}" {% if n == 2 %}selected{% endif %}>
+                  {{ n }} Adult{% if n > 1 %}s{% endif %} — ${{ "{:,.0f}".format(dest.price * n) }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="tv-price-summary mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span class="text-muted">${{ "{:,.0f}".format(dest.price) }} × 2 travellers</span>
+                <span id="previewTotal">${{ "{:,.0f}".format(dest.price * 2) }}</span>
+              </div>
+              <div class="d-flex justify-content-between small mb-1">
+                <span class="text-muted">Taxes & fees</span>
+                <span>$180</span>
+              </div>
+              <hr class="my-2" />
+              <div class="d-flex justify-content-between fw-bold">
+                <span>Total</span>
+                <span id="previewGrandTotal">${{ "{:,.0f}".format(dest.price * 2 + 180) }}</span>
+              </div>
+            </div>
+
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.booking', destination_id=dest.id) }}" class="btn tv-btn-primary w-100 py-3 fw-semibold">
+              <i class="bi bi-calendar-check me-2"></i> Book Now
+            </a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}?next={{ request.path }}" class="btn tv-btn-primary w-100 py-3 fw-semibold">
+              <i class="bi bi-lock me-2"></i> Login to Book
+            </a>
+            <p class="text-center text-muted small mt-2 mb-0">
+              <a href="{{ url_for('auth.register') }}">Create a free account</a> to book this trip
+            </p>
+            {% endif %}
+            <p class="text-center text-muted small mt-2 mb-0">Free cancellation within 48 hours</p>
+          </div>
+        </div>
+
+        <!-- Trust signals -->
+        <div class="tv-card mt-3">
+          <div class="tv-card-body">
+            <div class="d-flex flex-column gap-2">
+              <div class="d-flex align-items-center gap-2 text-muted small">
+                <i class="bi bi-shield-check text-success"></i> Secure, encrypted booking
+              </div>
+              <div class="d-flex align-items-center gap-2 text-muted small">
+                <i class="bi bi-award text-warning"></i> Verified travel partner
+              </div>
+              <div class="d-flex align-items-center gap-2 text-muted small">
+                <i class="bi bi-headset text-info"></i> 24/7 customer support
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const basePrice = {{ dest.price }};
+  const sel = document.getElementById('numTravellersPreview');
+  const tot = document.getElementById('previewTotal');
+  const grand = document.getElementById('previewGrandTotal');
+  if (sel) {
+    sel.addEventListener('change', () => {
+      const n = parseInt(sel.value);
+      const subtotal = basePrice * n;
+      if (tot) tot.textContent = '$' + (subtotal).toLocaleString();
+      if (grand) grand.textContent = '$' + (subtotal + 180).toLocaleString();
+    });
+  }
+</script>
+{% endblock %}

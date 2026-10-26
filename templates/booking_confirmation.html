@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light min-vh-screen">
+  <div class="container">
+    <div class="tv-steps mb-5">
+      <div class="tv-step completed"><div class="tv-step-num"><i class="bi bi-check2"></i></div><div class="tv-step-label">Traveller Details</div></div>
+      <div class="tv-step-line completed"></div>
+      <div class="tv-step completed"><div class="tv-step-num"><i class="bi bi-check2"></i></div><div class="tv-step-label">Review &amp; Pay</div></div>
+      <div class="tv-step-line completed"></div>
+      <div class="tv-step active"><div class="tv-step-num">3</div><div class="tv-step-label">Confirmation</div></div>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="tv-card text-center p-4 p-md-5">
+          <div class="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success" style="width:76px;height:76px;">
+            <i class="bi bi-check-lg fs-1"></i>
+          </div>
+          <p class="tv-section-tag mb-2">Your adventure is booked</p>
+          <h1 class="fw-bold mb-3">Booking confirmed!</h1>
+          <p class="text-muted mb-4">We’ve sent the booking details to <strong>{{ booking.lead_email }}</strong>.</p>
+
+          <div class="text-start bg-light rounded-3 p-3 p-md-4 mb-4">
+            <div class="d-flex justify-content-between border-bottom pb-3 mb-3">
+              <span class="text-muted">Booking reference</span>
+              <strong class="text-primary">{{ booking.booking_ref }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2"><span class="text-muted">Destination</span><strong>{{ booking.destination.name }}</strong></div>
+            <div class="d-flex justify-content-between mb-2"><span class="text-muted">Travel date</span><strong>{{ booking.travel_date.strftime('%d %b %Y') }}</strong></div>
+            <div class="d-flex justify-content-between mb-2"><span class="text-muted">Travellers</span><strong>{{ booking.traveller_count }}</strong></div>
+            <div class="d-flex justify-content-between"><span class="text-muted">Total</span><strong>${{ "{:,.0f}".format(booking.total_price) }}</strong></div>
+          </div>
+
+          <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="{{ url_for('main.my_bookings') }}" class="btn tv-btn-primary px-4">View My Bookings</a>
+            <a href="{{ url_for('main.destinations') }}" class="btn btn-outline-primary tv-btn-outline px-4">Explore More Trips</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

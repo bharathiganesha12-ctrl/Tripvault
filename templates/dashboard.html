@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="tv-dashboard-layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="tv-sidebar d-none d-lg-flex flex-column">
+    <div class="tv-sidebar-header">
+      <div class="tv-avatar tv-avatar-lg">{{ current_user.initials }}</div>
+      <div class="mt-2">
+        <div class="fw-bold text-white">{{ current_user.full_name }}</div>
+        <div class="text-white-50 small">{{ current_user.email }}</div>
+        <span class="badge tv-badge-premium mt-1">{% if current_user.is_admin %}Administrator{% else %}Premium Member{% endif %}</span>
+      </div>
+    </div>
+    <nav class="tv-sidebar-nav flex-grow-1 p-3">
+      <div class="tv-sidebar-group-label">Main</div>
+      <a href="{{ url_for('main.dashboard') }}" class="tv-sidebar-link active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="{{ url_for('main.destinations') }}" class="tv-sidebar-link"><i class="bi bi-compass"></i> Explore</a>
+      <a href="{{ url_for('main.my_bookings') }}" class="tv-sidebar-link"><i class="bi bi-journal-bookmark"></i> My Bookings</a>
+      <div class="tv-sidebar-group-label mt-3">Documents</div>
+      <a href="{{ url_for('documents.documents') }}" class="tv-sidebar-link"><i class="bi bi-file-earmark-lock"></i> My Documents</a>
+      {% if current_user.is_admin %}
+      <div class="tv-sidebar-group-label mt-3">Admin</div>
+      <a href="{{ url_for('admin.dashboard') }}" class="tv-sidebar-link"><i class="bi bi-shield-lock"></i> Admin Panel</a>
+      {% endif %}
+      <div class="tv-sidebar-group-label mt-3">Account</div>
+      <a href="{{ url_for('profile.profile') }}" class="tv-sidebar-link"><i class="bi bi-person-circle"></i> Profile</a>
+      <a href="{{ url_for('auth.logout') }}" class="tv-sidebar-link text-danger mt-2"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="tv-dashboard-main">
+
+    <div class="tv-dashboard-topbar d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h4 class="fw-bold mb-0">Good day, {{ current_user.first_name }} 👋</h4>
+        <p class="text-muted small mb-0">Here's what's happening with your trips.</p>
+      </div>
+      <a href="{{ url_for('main.destinations') }}" class="btn tv-btn-primary"><i class="bi bi-plus-lg me-1"></i> Book New Trip</a>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-xl-3 col-sm-6">
+        <div class="tv-stat-card tv-stat-blue">
+          <div class="tv-stat-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+          <div class="tv-stat-num">{{ all_bookings | length }}</div>
+          <div class="tv-stat-label">Total Bookings</div>
+          <div class="tv-stat-change text-muted small">All time</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-sm-6">
+        <div class="tv-stat-card tv-stat-teal">
+          <div class="tv-stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+          <div class="tv-stat-num">{{ completed | length }}</div>
+          <div class="tv-stat-label">Completed Trips</div>
+          <div class="tv-stat-change text-muted small">All time</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-sm-6">
+        <div class="tv-stat-card tv-stat-orange">
+          <div class="tv-stat-icon"><i class="bi bi-hourglass-split"></i></div>
+          <div class="tv-stat-num">{{ upcoming | length }}</div>
+          <div class="tv-stat-label">Upcoming Trips</div>
+          <div class="tv-stat-change text-warning small"><i class="bi bi-calendar-event"></i>
+            {% if upcoming %}{{ upcoming[0].travel_date.strftime('%b %Y') }}{% else %}None scheduled{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-sm-6">
+        <div class="tv-stat-card tv-stat-purple">
+          <div class="tv-stat-icon"><i class="bi bi-file-earmark-lock-fill"></i></div>
+          <div class="tv-stat-num">{{ docs | length }}</div>
+          <div class="tv-stat-label">Stored Documents</div>
+          <div class="tv-stat-change text-info small"><i class="bi bi-cloud-check"></i> Encrypted</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Upcoming Trips -->
+      <div class="col-lg-7">
+        <div class="tv-card h-100">
+          <div class="tv-card-header">
+            <h6 class="fw-bold mb-0">Upcoming Trips</h6>
+            <a href="{{ url_for('main.my_bookings') }}" class="btn btn-sm btn-outline-primary tv-btn-outline">View All</a>
+          </div>
+          <div class="tv-card-body">
+            {% if upcoming %}
+              {% for b in upcoming[:3] %}
+              <div class="tv-booking-item d-flex align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
+                <img src="{{ b.destination.image_url or 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=120&q=80' }}"
+                     alt="{{ b.destination.name }}" class="tv-booking-thumb rounded-2" />
+                <div class="flex-grow-1 min-width-0">
+                  <div class="fw-semibold text-truncate">{{ b.destination.name }}</div>
+                  <div class="text-muted small">
+                    <i class="bi bi-calendar3 me-1"></i>{{ b.travel_date.strftime('%d %b %Y') }}
+                    &nbsp;·&nbsp;
+                    <i class="bi bi-people me-1"></i>{{ b.traveller_count }} traveller{% if b.traveller_count > 1 %}s{% endif %}
+                  </div>
+                </div>
+                <span class="badge bg-{{ b.status_badge_class }}-subtle text-{{ b.status_badge_class }} px-2 py-1">
+                  {{ b.status | capitalize }}
+                </span>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-center py-4">
+                <i class="bi bi-map text-muted fs-2"></i>
+                <p class="text-muted mt-2 mb-0 small">No upcoming trips.
+                  <a href="{{ url_for('main.destinations') }}">Book one now!</a>
+                </p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions + Doc summary -->
+      <div class="col-lg-5">
+        <div class="tv-card mb-4">
+          <div class="tv-card-header"><h6 class="fw-bold mb-0">Quick Actions</h6></div>
+          <div class="tv-card-body">
+            <div class="d-grid gap-2">
+              <a href="{{ url_for('main.destinations') }}" class="btn tv-btn-primary text-start d-flex align-items-center gap-2">
+                <i class="bi bi-compass-fill"></i> Explore Destinations
+              </a>
+              <a href="{{ url_for('documents.documents') }}" class="btn btn-outline-secondary text-start d-flex align-items-center gap-2">
+                <i class="bi bi-cloud-upload"></i> Upload Document
+              </a>
+              <a href="{{ url_for('main.my_bookings') }}" class="btn btn-outline-secondary text-start d-flex align-items-center gap-2">
+                <i class="bi bi-journal-text"></i> View Booking History
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Document summary -->
+        <div class="tv-card">
+          <div class="tv-card-header">
+            <h6 class="fw-bold mb-0">Document Vault</h6>
+            <a href="{{ url_for('documents.documents') }}" class="btn btn-sm btn-outline-primary tv-btn-outline">Manage</a>
+          </div>
+          <div class="tv-card-body">
+            {% if docs %}
+              <div class="d-flex flex-column gap-2">
+                {% for doc in docs[:4] %}
+                <div class="d-flex align-items-center gap-2 p-2 rounded-2 bg-light">
+                  <i class="bi {{ doc.type_icon }} text-{{ doc.type_color }}"></i>
+                  <div class="flex-grow-1 min-width-0">
+                    <div class="small fw-semibold text-truncate">{{ doc.display_name }}</div>
+                    <div class="text-muted" style="font-size:0.7rem">{{ doc.type_label }}</div>
+                  </div>
+                  <i class="bi bi-lock-fill text-muted small"></i>
+                </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-center py-3">
+                <i class="bi bi-folder2-open text-muted fs-3"></i>
+                <p class="text-muted small mt-2 mb-0">No documents yet.
+                  <a href="{{ url_for('documents.documents') }}">Upload one</a>
+                </p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

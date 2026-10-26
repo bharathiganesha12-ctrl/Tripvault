@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<section class="tv-auth-section">
+  <div class="container">
+    <div class="row justify-content-center align-items-stretch min-vh-screen">
+
+      <!-- Left promo panel -->
+      <div class="col-lg-5 d-none d-lg-flex">
+        <div class="tv-auth-promo w-100">
+          <div class="tv-auth-promo-overlay"></div>
+          <div class="tv-auth-promo-content">
+            <i class="bi bi-airplane-engines-fill fs-1 text-white mb-3"></i>
+            <h3 class="text-white fw-bold mb-3">Welcome Back, Explorer</h3>
+            <p class="text-white-50">Sign in to manage your bookings, access your secure document vault, and plan your next adventure.</p>
+            <div class="mt-4 d-flex flex-column gap-3">
+              <div class="d-flex align-items-center gap-2 text-white-50 small">
+                <i class="bi bi-shield-check text-success"></i> AES-256 encrypted documents
+              </div>
+              <div class="d-flex align-items-center gap-2 text-white-50 small">
+                <i class="bi bi-globe text-info"></i> Access from anywhere
+              </div>
+              <div class="d-flex align-items-center gap-2 text-white-50 small">
+                <i class="bi bi-journal-bookmark text-warning"></i> Full booking history
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right form panel -->
+      <div class="col-lg-7 d-flex align-items-center">
+        <div class="tv-auth-form-wrap w-100 py-5 px-lg-5 px-4">
+
+          <div class="mb-4">
+            <a href="{{ url_for('main.index') }}" class="tv-brand text-decoration-none h5">
+              <i class="bi bi-airplane-engines-fill"></i> TripVault
+            </a>
+          </div>
+
+          <h2 class="fw-bold mb-1">Sign In</h2>
+          <p class="text-muted mb-4">Enter your credentials to access your account.</p>
+
+          <form method="POST" action="{{ url_for('auth.login') }}">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold" for="email">Email Address</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                {{ form.email(class="form-control border-start-0 bg-light" + (" is-invalid" if form.email.errors else ""),
+                   id="email", placeholder="you@example.com", autocomplete="email") }}
+                {% for e in form.email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="d-flex justify-content-between">
+                <label class="form-label fw-semibold" for="password">Password</label>
+                <a href="#" class="small text-primary">Forgot password?</a>
+              </div>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                {{ form.password(class="form-control border-start-0 bg-light" + (" is-invalid" if form.password.errors else ""),
+                   id="password", placeholder="Enter your password", autocomplete="current-password") }}
+                <button class="input-group-text bg-light border-start-0 toggle-password" type="button" tabindex="-1">
+                  <i class="bi bi-eye text-muted"></i>
+                </button>
+                {% for e in form.password.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <div class="form-check">
+                {{ form.remember(class="form-check-input", id="remember") }}
+                <label class="form-check-label small text-muted" for="remember">Remember me for 30 days</label>
+              </div>
+            </div>
+
+            <!-- Demo credentials -->
+            <div class="alert alert-info py-2 small mb-3">
+              <i class="bi bi-info-circle me-1"></i>
+              <strong>Demo accounts:</strong><br/>
+              User: <code>john@example.com</code> / <code>John@1234</code><br/>
+              Admin: <code>admin@tripvault.com</code> / <code>Admin@1234</code>
+            </div>
+
+            <button type="submit" class="btn tv-btn-primary w-100 py-3 fw-semibold">
+              Sign In <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+
+            <div class="text-center mt-4">
+              <span class="text-muted small">Don't have an account? </span>
+              <a href="{{ url_for('auth.register') }}" class="text-primary fw-semibold small">Create one free</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

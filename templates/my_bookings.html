@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+  <div class="container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="fw-bold mb-1">My Bookings</h3>
+        <p class="text-muted small mb-0">Track and manage all your travel bookings.</p>
+      </div>
+      <a href="{{ url_for('main.destinations') }}" class="btn tv-btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Book New Trip
+      </a>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs tv-tabs mb-4" id="bookingTabs">
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#allBookings">
+          All <span class="badge bg-primary ms-1">{{ all_bookings | length }}</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#upcomingTab">
+          Upcoming <span class="badge bg-warning text-dark ms-1">{{ upcoming | length }}</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#completedTab">
+          Completed <span class="badge bg-success ms-1">{{ completed | length }}</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cancelledTab">
+          Cancelled <span class="badge bg-danger ms-1">{{ cancelled | length }}</span>
+        </button>
+      </li>
+    </ul>
+
+    {% macro booking_row(b) %}
+    <div class="tv-card tv-booking-row mb-3">
+      <div class="tv-card-body">
+        <div class="row align-items-center g-3">
+          <div class="col-auto">
+            <img src="{{ b.destination.image_url or 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=120&q=80' }}"
+                 alt="{{ b.destination.name }}" class="tv-booking-thumb-lg" />
+          </div>
+          <div class="col">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+              <div>
+                <h6 class="fw-bold mb-1">{{ b.destination.name }}</h6>
+                <div class="text-muted small">
+                  <span class="me-3"><i class="bi bi-hash me-1"></i>{{ b.booking_ref }}</span>
+                  <span class="me-3"><i class="bi bi-calendar3 me-1"></i>{{ b.travel_date.strftime('%d %b %Y') }}</span>
+                  <span><i class="bi bi-people me-1"></i>{{ b.traveller_count }} traveller{% if b.traveller_count > 1 %}s{% endif %}</span>
+                </div>
+              </div>
+              <div class="text-end">
+                <div class="fw-bold">${{ "{:,.0f}".format(b.total_price) }}</div>
+                <span class="badge tv-status-{{ b.status }} mt-1">{{ b.status | capitalize }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-auto d-flex gap-2">
+            <a href="{{ url_for('main.trip_details', destination_id=b.destination_id) }}"
+               class="btn btn-sm btn-outline-primary">View</a>
+            {% if b.status in ['confirmed', 'pending'] %}
+            <form method="POST" action="{{ url_for('main.cancel_booking_route', booking_id=b.id) }}"
+                  onsubmit="return confirm('Cancel booking {{ b.booking_ref }}?')">
+              {{ csrf_token_field() if csrf_token_field is defined }}
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+            </form>
+            {% elif b.status == 'completed' %}
+            <a href="{{ url_for('main.trip_details', destination_id=b.destination_id) }}"
+               class="btn btn-sm tv-btn-primary">Rebook</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endmacro %}
+
+    <div class="tab-content">
+      <!-- All -->
+      <div class="tab-pane fade show active" id="allBookings">
+        {% if all_bookings %}
+          {% for b in all_bookings %}{{ booking_row(b) }}{% endfor %}
+        {% else %}
+          <div class="tv-card text-center py-5">
+            <i class="bi bi-journal-x text-muted" style="font-size:3rem;"></i>
+            <h6 class="mt-3 text-muted">No bookings yet</h6>
+            <a href="{{ url_for('main.destinations') }}" class="btn tv-btn-primary mt-2">Explore Destinations</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Upcoming -->
+      <div class="tab-pane fade" id="upcomingTab">
+        {% if upcoming %}
+          {% for b in upcoming %}{{ booking_row(b) }}{% endfor %}
+        {% else %}
+          <div class="tv-card text-center py-5">
+            <i class="bi bi-calendar-event text-muted" style="font-size:3rem;"></i>
+            <h6 class="mt-3 text-muted">No upcoming trips</h6>
+            <a href="{{ url_for('main.destinations') }}" class="btn tv-btn-primary mt-2">Book a Trip</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Completed -->
+      <div class="tab-pane fade" id="completedTab">
+        {% if completed %}
+          {% for b in completed %}{{ booking_row(b) }}{% endfor %}
+        {% else %}
+          <div class="tv-card text-center py-5">
+            <i class="bi bi-check-circle text-muted" style="font-size:3rem;"></i>
+            <h6 class="mt-3 text-muted">No completed trips yet</h6>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Cancelled -->
+      <div class="tab-pane fade" id="cancelledTab">
+        {% if cancelled %}
+          {% for b in cancelled %}{{ booking_row(b) }}{% endfor %}
+        {% else %}
+          <div class="tv-card text-center py-5">
+            <i class="bi bi-x-circle text-muted" style="font-size:3rem;"></i>
+            <h6 class="mt-3 text-muted">No cancelled bookings</h6>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

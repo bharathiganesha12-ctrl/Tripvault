@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+  <div class="container" style="max-width:860px;">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="tv-avatar tv-avatar-lg" style="font-size:1.5rem;">{{ current_user.initials }}</div>
+      <div>
+        <h3 class="fw-bold mb-0">{{ current_user.full_name }}</h3>
+        <p class="text-muted small mb-0">{{ current_user.email }}
+          {% if current_user.is_admin %}
+          <span class="badge bg-danger ms-2">Admin</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+
+      <!-- Profile details -->
+      <div class="col-lg-6">
+        <div class="tv-card h-100">
+          <div class="tv-card-header">
+            <h6 class="fw-bold mb-0"><i class="bi bi-person-circle me-2 text-primary"></i>Personal Details</h6>
+          </div>
+          <div class="tv-card-body">
+            <form method="POST" action="{{ url_for('profile.profile') }}" novalidate>
+              {{ pform.hidden_tag() }}
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small">First Name</label>
+                  {{ pform.first_name(class="form-control" + (" is-invalid" if pform.first_name.errors else "")) }}
+                  {% for e in pform.first_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small">Last Name</label>
+                  {{ pform.last_name(class="form-control" + (" is-invalid" if pform.last_name.errors else "")) }}
+                  {% for e in pform.last_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold small">Email Address</label>
+                  <input type="email" class="form-control bg-light" value="{{ current_user.email }}" disabled />
+                  <div class="form-text">Email cannot be changed.</div>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold small">Phone Number</label>
+                  {{ pform.phone(class="form-control", placeholder="+91 9876543210") }}
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold small">Member Since</label>
+                  <input type="text" class="form-control bg-light"
+                         value="{{ current_user.created_at.strftime('%d %B %Y') }}" disabled />
+                </div>
+                <div class="col-12">
+                  <button type="submit" name="save_profile" class="btn tv-btn-primary w-100">
+                    <i class="bi bi-save me-1"></i> Save Changes
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Change password -->
+      <div class="col-lg-6">
+        <div class="tv-card mb-4">
+          <div class="tv-card-header">
+            <h6 class="fw-bold mb-0"><i class="bi bi-lock-fill me-2 text-warning"></i>Change Password</h6>
+          </div>
+          <div class="tv-card-body">
+            <form method="POST" action="{{ url_for('profile.profile') }}" novalidate>
+              {{ cform.hidden_tag() }}
+              <div class="d-flex flex-column gap-3">
+                <div>
+                  <label class="form-label fw-semibold small">Current Password</label>
+                  <div class="input-group">
+                    {{ cform.current_password(class="form-control" + (" is-invalid" if cform.current_password.errors else ""),
+                       placeholder="Enter current password") }}
+                    <button class="input-group-text bg-light toggle-password" type="button">
+                      <i class="bi bi-eye text-muted"></i>
+                    </button>
+                  </div>
+                  {% for e in cform.current_password.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+                <div>
+                  <label class="form-label fw-semibold small">New Password</label>
+                  <div class="input-group">
+                    {{ cform.new_password(class="form-control" + (" is-invalid" if cform.new_password.errors else ""),
+                       placeholder="Min. 8 characters", id="regPassword") }}
+                    <button class="input-group-text bg-light toggle-password" type="button">
+                      <i class="bi bi-eye text-muted"></i>
+                    </button>
+                  </div>
+                  <div class="mt-1">
+                    <div class="progress" style="height:4px;">
+                      <div class="progress-bar" id="passwordStrengthBar" style="width:0%;"></div>
+                    </div>
+                    <small class="text-muted" id="passwordStrengthText"></small>
+                  </div>
+                  {% for e in cform.new_password.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+                <div>
+                  <label class="form-label fw-semibold small">Confirm New Password</label>
+                  {{ cform.confirm_password(class="form-control" + (" is-invalid" if cform.confirm_password.errors else ""),
+                     placeholder="Re-enter new password", id="confirmPassword") }}
+                  {% for e in cform.confirm_password.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+                <button type="submit" name="change_password" class="btn btn-warning fw-semibold">
+                  <i class="bi bi-shield-lock me-1"></i> Update Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Account stats -->
+        <div class="tv-card">
+          <div class="tv-card-header">
+            <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart me-2 text-teal"></i>Account Summary</h6>
+          </div>
+          <div class="tv-card-body">
+            <div class="d-flex flex-column gap-3">
+              <a href="{{ url_for('main.my_bookings') }}" class="d-flex justify-content-between align-items-center text-decoration-none text-dark p-2 rounded-2 bg-light">
+                <span class="small fw-semibold"><i class="bi bi-journal-bookmark text-primary me-2"></i>Total Bookings</span>
+                <span class="badge bg-primary">{{ current_user.bookings.count() }}</span>
+              </a>
+              <a href="{{ url_for('documents.documents') }}" class="d-flex justify-content-between align-items-center text-decoration-none text-dark p-2 rounded-2 bg-light">
+                <span class="small fw-semibold"><i class="bi bi-file-earmark-lock text-success me-2"></i>Documents Stored</span>
+                <span class="badge bg-success">{{ current_user.documents.count() }}</span>
+              </a>
+              <div class="d-flex justify-content-between align-items-center p-2 rounded-2 bg-light">
+                <span class="small fw-semibold"><i class="bi bi-shield-check text-info me-2"></i>Account Role</span>
+                <span class="badge {% if current_user.is_admin %}bg-danger{% else %}bg-secondary{% endif %}">
+                  {% if current_user.is_admin %}Admin{% else %}User{% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Danger zone -->
+    <div class="tv-card mt-4 border-danger">
+      <div class="tv-card-header bg-danger-subtle">
+        <h6 class="fw-bold mb-0 text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Danger Zone</h6>
+      </div>
+      <div class="tv-card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+          <div class="fw-semibold small">Delete Account</div>
+          <div class="text-muted small">Permanently delete your account and all associated data. This cannot be undone.</div>
+        </div>
+        <button class="btn btn-outline-danger btn-sm" disabled title="Coming in Phase 4">
+          <i class="bi bi-trash me-1"></i> Delete Account
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
